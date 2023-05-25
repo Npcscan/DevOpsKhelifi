@@ -8,54 +8,39 @@ pipeline {
             steps {
                 echo 'Pulling ...'
                 git branch: 'main',
-                    url: 'https://https://github.com/Npcscan/DevOpsKhelifi.git'
+                    url: 'https://github.com/Npcscan/DevOpsKhelifi.git'
             }
         }
         stage('Affichage de la date système') {
             steps {
-                sh 'date'
+                echo "${env.DATE}"
             }
         }
         stage('maven version') {
             steps {
-                sh 'mvn -version'
+                bat 'mvn -version'
             }
         }
         stage('Maven Clean') {
             steps {
-                sh 'mvn clean -U'
+                bat 'mvn clean -U'
             }
         }
 
         stage('Maven Compile') {
             steps {
-                sh 'mvn clean package'
+                bat 'mvn clean package'
             }
         }
         stage('Construction du livrable') {
             steps {
-                sh 'mvn compiler:compile'
+                bat 'mvn compiler:compile'
             }
         }
         stage('Maven test') {
             steps {
-                sh 'mvn test'
+                bat 'mvn test'
             }
         }
-       stage('Maven SonarQube Analysis') {
-           environment {
-               SONAR_TOKEN = credentials('sonarqube_token')
-           }
-           steps {
-               sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
-           }
-       }
-       stage('Deploy to Nexus') {
-           steps {
-               withMaven(maven: 'maven-3.0.5', mavenSettingsConfig: 'maven-settings') {
-                   sh 'mvn deploy'
-               }
-           }
-       }
     }
 }
