@@ -1,29 +1,18 @@
 package tn.esprit.spring.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import tn.esprit.spring.entities.Train;
-import tn.esprit.spring.entities.Ville;
-import tn.esprit.spring.entities.Voyage;
-import tn.esprit.spring.entities.etatTrain;
+import org.springframework.transaction.annotation.Transactional;
+import tn.esprit.spring.entities.*;
 import tn.esprit.spring.repository.TrainRepository;
 import tn.esprit.spring.repository.VoyageRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import tn.esprit.spring.repository.VoyageurRepository;
 
-import tn.esprit.spring.entities.Voyageur;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import tn.esprit.spring.entities.Voyageur;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.text.ParseException;
-
-import org.springframework.scheduling.annotation.Scheduled;
+import java.util.List;
 
 @Service
 public class TrainServiceImpl implements ITrainService {
@@ -31,7 +20,6 @@ public class TrainServiceImpl implements ITrainService {
 
     @Autowired
     VoyageurRepository VoyageurRepository;
-
 
     @Autowired
     TrainRepository trainRepository;
@@ -49,7 +37,7 @@ public class TrainServiceImpl implements ITrainService {
         int cpt = 0;
         int occ = 0;
         List<Voyage> listvoyage = (List<Voyage>) voyageRepository.findAll();
-        System.out.println("tailee" + listvoyage.size());
+        System.out.println("taille" + listvoyage.size());
 
         for (int i = 0; i < listvoyage.size(); i++) {
             System.out.println("gare" + nomGareDepart + "value" + listvoyage.get(0).getGareDepart());
@@ -100,9 +88,13 @@ public class TrainServiceImpl implements ITrainService {
         List<Voyage> lesvoyages = new ArrayList<>();
         lesvoyages = voyageRepository.RechercheVoyage(nomGareDepart, nomGareDepart, heureDepart);
         System.out.println("taille" + lesvoyages.size());
+
         for (int i = 0; i < lesvoyages.size(); i++) {
+            ArrayList<Voyageur> newVoyageurs = new ArrayList<>();
             if (lesvoyages.get(i).getTrain().getNbPlaceLibre() != 0) {
-                lesvoyages.get(i).getMesVoyageurs().add(c);
+                newVoyageurs.add(c);
+                newVoyageurs.addAll(lesvoyages.get(i).getMesVoyageurs());
+                lesvoyages.get(i).setMesVoyageurs(newVoyageurs);
                 lesvoyages.get(i).getTrain().setNbPlaceLibre(lesvoyages.get(i).getTrain().getNbPlaceLibre() - 1);
             } else
                 System.out.print("Pas de place disponible pour " + VoyageurRepository.findById(idVoyageur).get().getNomVoyageur());
@@ -117,9 +109,9 @@ public class TrainServiceImpl implements ITrainService {
         System.out.println("taille" + lesvoyages.size());
 
         for (int i = 0; i < lesvoyages.size(); i++) {
-            for (int j = 0; j < lesvoyages.get(i).getMesVoyageurs().size(); j++)
-                lesvoyages.get(i).getMesVoyageurs().remove(j);
-            lesvoyages.get(i).getTrain().setNbPlaceLibre(lesvoyages.get(i).getTrain().getNbPlaceLibre() + 1);
+            List<Voyageur> mesVoyageurs = lesvoyages.get(i).getMesVoyageurs();
+            lesvoyages.get(i).setMesVoyageurs(new ArrayList<>());
+            lesvoyages.get(i).getTrain().setNbPlaceLibre(mesVoyageurs.size());
             lesvoyages.get(i).getTrain().setEtat(etatTrain.prevu);
             voyageRepository.save(lesvoyages.get(i));
             trainRepository.save(lesvoyages.get(i).getTrain());
@@ -138,8 +130,7 @@ public class TrainServiceImpl implements ITrainService {
         for (int i = 0; i < lesvoyages.size(); i++) {
             if (lesvoyages.get(i).getDateArrivee().before(date)) {
                 System.out.println("les trains sont " + lesvoyages.get(i).getTrain().getCodeTrain());
-            }
-            else{
+            } else {
 
             }
         }
